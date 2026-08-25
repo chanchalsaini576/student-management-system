@@ -1,0 +1,49 @@
+:root {
+  --primary: #4f46e5;
+  --primary-dark: #3730a3;
+}
+
+body {
+  background-color: #f4f6fb;
+}
+
+.app-navbar {
+  background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+}
+
+.stat-card {
+  border: none;
+  border-radius: 14px;
+  color: #fff;
+  padding: 1.25rem;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+}
+
+.stat-card h2 { font-weight: 700; margin-bottom: 0; }
+.stat-card small { opacity: 0.85; }
+
+.bg-indigo { background: linear-gradient(135deg, #6366f1, #4338ca); }
+.bg-teal { background: linear-gradient(135deg, #14b8a6, #0f766e); }
+.bg-orange { background: linear-gradient(135deg, #f59e0b, #b45309); }
+.bg-rose { background: linear-gradient(135deg, #f43f5e, #9f1239); }
+
+.card {
+  border: none;
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.table thead {
+  background-color: #eef0fb;
+}
+
+.badge-in { background-color: #16a34a; }
+.badge-out { background-color: #dc2626; }
+
+.section-title {
+  font-weight: 700;
+  color: var(--primary-dark);
+  margin-bottom: 0.75rem;
+}
+
+a { text-decoration: none; }
