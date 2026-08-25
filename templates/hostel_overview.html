@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Hostel Overview{% endblock %}
+{% block content %}
+
+<h3 class="section-title">Hostel Residents</h3>
+
+<div class="card p-3">
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>Roll No</th><th>Name</th><th>Room</th><th>Block</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for s in students %}
+        <tr>
+          <td>{{ s.roll_no }}</td>
+          <td><a href="{{ url_for('student_detail', student_id=s.id) }}">{{ s.name }}</a></td>
+          <td>{{ s.room_no or '-' }}</td>
+          <td>{{ s.hostel_block or '-' }}</td>
+          <td><span class="badge {{ 'badge-in' if s.current_hostel_status() == 'IN' else 'badge-out' }}">{{ s.current_hostel_status() }}</span></td>
+          <td><a href="{{ url_for('student_detail', student_id=s.id) }}" class="btn btn-sm btn-outline-primary">View</a></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-center text-muted py-4">No hostel residents added yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

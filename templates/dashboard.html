@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h3 class="section-title mb-0">Dashboard</h3>
+  <form method="POST" action="{{ url_for('send_reminders') }}">
+    <button class="btn btn-primary"><i class="bi bi-envelope-check"></i> Send Reminders Now</button>
+  </form>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-3 col-6">
+    <div class="stat-card bg-indigo">
+      <small>Total Students</small>
+      <h2>{{ total_students }}</h2>
+    </div>
+  </div>
+  <div class="col-md-3 col-6">
+    <div class="stat-card bg-teal">
+      <small>Hostel Residents</small>
+      <h2>{{ hostel_residents }}</h2>
+    </div>
+  </div>
+  <div class="col-md-3 col-6">
+    <div class="stat-card bg-orange">
+      <small>Pending Fees (₹)</small>
+      <h2>{{ "%.0f"|format(pending_fee_amount) }}</h2>
+    </div>
+  </div>
+  <div class="col-md-3 col-6">
+    <div class="stat-card bg-rose">
+      <small>Overdue Fee Records</small>
+      <h2>{{ overdue_fees }}</h2>
+    </div>
+  </div>
+</div>
+
+<div class="card p-4">
+  <h5 class="section-title"><i class="bi bi-clock-history"></i> Upcoming Tests / Work (next entries)</h5>
+  {% if upcoming_tasks %}
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>Student</th><th>Type</th><th>Title</th><th>Due Date</th></tr></thead>
+      <tbody>
+        {% for t in upcoming_tasks %}
+        <tr>
+          <td><a href="{{ url_for('student_detail', student_id=t.student_id) }}">{{ t.student.name }}</a></td>
+          <td><span class="badge bg-secondary">{{ t.task_type }}</span></td>
+          <td>{{ t.title }}</td>
+          <td>{{ t.due_date.strftime('%d-%b-%Y') }}{% if t.due_date == today %} <span class="badge bg-danger">Today</span>{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="text-muted mb-0">No upcoming tasks.</p>
+  {% endif %}
+</div>
+
+{% endblock %}

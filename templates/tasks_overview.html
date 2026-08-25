@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Tasks & Tests{% endblock %}
+{% block content %}
+
+<h3 class="section-title">All Upcoming Work & Tests</h3>
+
+<div class="card p-3">
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>Due Date</th><th>Student</th><th>Type</th><th>Title</th><th></th></tr></thead>
+      <tbody>
+        {% for t in tasks %}
+        <tr class="{{ 'table-danger' if t.due_date < today else '' }}">
+          <td>{{ t.due_date.strftime('%d-%b-%Y') }}</td>
+          <td><a href="{{ url_for('student_detail', student_id=t.student_id) }}">{{ t.student.name }}</a></td>
+          <td><span class="badge bg-secondary">{{ t.task_type }}</span></td>
+          <td>{{ t.title }}</td>
+          <td>
+            <form method="POST" action="{{ url_for('toggle_task_done', task_id=t.id) }}">
+              <button class="btn btn-sm btn-outline-success">Mark Complete</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="text-center text-muted py-4">No pending tasks.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}
