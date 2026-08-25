@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if student else 'Add' }} Student{% endblock %}
+{% block content %}
+
+<h3 class="section-title">{{ 'Edit' if student else 'Add New' }} Student</h3>
+
+<form method="POST" class="card p-4">
+  <div class="row g-3">
+    <div class="col-md-3">
+      <label class="form-label">Roll No</label>
+      {% if student %}
+        <input type="text" class="form-control" value="{{ student.roll_no }}" disabled>
+      {% else %}
+        <input type="text" name="roll_no" class="form-control" required>
+      {% endif %}
+    </div>
+    <div class="col-md-5">
+      <label class="form-label">Full Name</label>
+      <input type="text" name="name" class="form-control" value="{{ student.name if student else '' }}" required>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Email</label>
+      <input type="email" name="email" class="form-control" value="{{ student.email if student else '' }}" required>
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label">Course</label>
+      <input type="text" name="course" class="form-control" value="{{ student.course if student else '' }}" required placeholder="e.g. BCA, B.Tech CSE">
+    </div>
+    <div class="col-md-2">
+      <label class="form-label">Year</label>
+      <input type="number" name="year" min="1" max="5" class="form-control" value="{{ student.year if student else '' }}" required>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Phone</label>
+      <input type="text" name="phone" class="form-control" value="{{ student.phone if student else '' }}">
+    </div>
+
+    <div class="col-12"><hr><h6 class="text-muted">Residential Details (where the student lives)</h6></div>
+
+    <div class="col-md-6">
+      <label class="form-label">Address</label>
+      <input type="text" name="address" class="form-control" value="{{ student.address if student else '' }}">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">City</label>
+      <input type="text" name="city" class="form-control" value="{{ student.city if student else '' }}">
+    </div>
+    <div class="col-md-2">
+      <label class="form-label">State</label>
+      <input type="text" name="state" class="form-control" value="{{ student.state if student else '' }}">
+    </div>
+    <div class="col-md-1">
+      <label class="form-label">Pin</label>
+      <input type="text" name="pincode" class="form-control" value="{{ student.pincode if student else '' }}">
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label">Guardian Name</label>
+      <input type="text" name="guardian_name" class="form-control" value="{{ student.guardian_name if student else '' }}">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Guardian Phone</label>
+      <input type="text" name="guardian_phone" class="form-control" value="{{ student.guardian_phone if student else '' }}">
+    </div>
+
+    <div class="col-12"><hr><h6 class="text-muted">Hostel Details</h6></div>
+
+    <div class="col-md-3">
+      <div class="form-check mt-4">
+        <input class="form-check-input" type="checkbox" name="is_hostel_resident" id="hostelCheck"
+          {% if student and student.is_hostel_resident %}checked{% endif %}>
+        <label class="form-check-label" for="hostelCheck">Hostel Resident?</label>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Room No</label>
+      <input type="text" name="room_no" class="form-control" value="{{ student.room_no if student else '' }}">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Hostel Block</label>
+      <input type="text" name="hostel_block" class="form-control" value="{{ student.hostel_block if student else '' }}">
+    </div>
+  </div>
+
+  <div class="mt-4">
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Save</button>
+    <a href="{{ url_for('list_students') }}" class="btn btn-outline-secondary">Cancel</a>
+  </div>
+</form>
+
+{% endblock %}

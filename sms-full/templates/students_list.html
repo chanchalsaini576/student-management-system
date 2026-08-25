@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Students{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+  <h3 class="section-title mb-0">All Students</h3>
+  <a href="{{ url_for('new_student') }}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Add Student</a>
+</div>
+
+<form class="mb-3" method="get">
+  <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Search by name or roll no...">
+</form>
+
+<div class="card p-3">
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Roll No</th><th>Name</th><th>Course</th><th>Year</th>
+          <th>Attendance</th><th>Hostel</th><th>Pending Fees</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in students %}
+        <tr>
+          <td>{{ s.roll_no }}</td>
+          <td><a href="{{ url_for('student_detail', student_id=s.id) }}">{{ s.name }}</a></td>
+          <td>{{ s.course }}</td>
+          <td>{{ s.year }}</td>
+          <td>
+            {% set pct = s.attendance_percentage() %}
+            <span class="badge {{ 'bg-success' if pct >= 75 else 'bg-danger' }}">{{ pct }}%</span>
+          </td>
+          <td>
+            {% if s.is_hostel_resident %}
+              <span class="badge {{ 'badge-in' if s.current_hostel_status() == 'IN' else 'badge-out' }}">{{ s.current_hostel_status() }}</span>
+            {% else %}
+              <span class="text-muted">Day Scholar</span>
+            {% endif %}
+          </td>
+          <td>
+            {% set pending = s.pending_fees_total() %}
+            {% if pending > 0 %}
+              <span class="badge bg-warning text-dark">₹{{ "%.0f"|format(pending) }}</span>
+            {% else %}
+              <span class="badge bg-success">Clear</span>
+            {% endif %}
+          </td>
+          <td class="text-end">
+            <a href="{{ url_for('student_detail', student_id=s.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a>
+            <a href="{{ url_for('edit_student', student_id=s.id) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" class="text-center text-muted py-4">No students found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

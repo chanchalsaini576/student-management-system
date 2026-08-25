@@ -1,0 +1,20 @@
+# Environment / secrets
+.env
+
+# Database
+sms.db
+*.db
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/

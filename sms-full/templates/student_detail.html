@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+{% block title %}{{ student.name }}{% endblock %}
+{% block content %}
+
+<div class="card p-4 mb-4">
+  <div class="d-flex justify-content-between flex-wrap gap-2">
+    <div>
+      <h3 class="mb-0">{{ student.name }} <small class="text-muted">({{ student.roll_no }})</small></h3>
+      <p class="text-muted mb-1">{{ student.course }} — Year {{ student.year }}</p>
+      <p class="mb-1"><i class="bi bi-envelope"></i> {{ student.email }} &nbsp; <i class="bi bi-telephone"></i> {{ student.phone or '-' }}</p>
+      <p class="mb-1"><i class="bi bi-geo-alt"></i>
+        {{ student.address or '-' }}{% if student.city %}, {{ student.city }}{% endif %}{% if student.state %}, {{ student.state }}{% endif %} {{ student.pincode or '' }}
+      </p>
+      <p class="mb-0 text-muted">Guardian: {{ student.guardian_name or '-' }} ({{ student.guardian_phone or '-' }})</p>
+    </div>
+    <div class="text-end">
+      <a href="{{ url_for('edit_student', student_id=student.id) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil"></i> Edit</a>
+      <form method="POST" action="{{ url_for('delete_student', student_id=student.id) }}" class="confirm-delete d-inline">
+        <button class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i> Delete</button>
+      </form>
+      <div class="mt-3">
+        <span class="badge {{ 'bg-success' if student.attendance_percentage() >= 75 else 'bg-danger' }} fs-6">
+          Attendance: {{ student.attendance_percentage() }}%
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ul class="nav nav-tabs" id="studentTabs" role="tablist">
+  <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#attendance">Attendance</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#scorecard">Score Card</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#fees">Fees</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#hostel">Hostel In/Out</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tasks">Upcoming Work / Tests</button></li>
+</ul>
+
+<div class="tab-content bg-white p-4 rounded-bottom shadow-sm">
+
+  <!-- ATTENDANCE -->
+  <div class="tab-pane fade show active" id="attendance">
+    <form method="POST" action="{{ url_for('mark_attendance', student_id=student.id) }}" class="row g-2 mb-3">
+      <div class="col-md-3"><input type="date" name="date" class="form-control" value="{{ today }}" required></div>
+      <div class="col-md-3">
+        <select name="status" class="form-select" required>
+          <option value="Present">Present</option>
+          <option value="Absent">Absent</option>
+        </select>
+      </div>
+      <div class="col-md-3"><input type="text" name="subject" class="form-control" placeholder="Subject (optional)"></div>
+      <div class="col-md-3"><button class="btn btn-primary w-100"><i class="bi bi-plus-lg"></i> Mark</button></div>
+    </form>
+    <table class="table table-sm">
+      <thead><tr><th>Date</th><th>Subject</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for a in student.attendance_records|sort(attribute='date', reverse=true) %}
+        <tr>
+          <td>{{ a.date.strftime('%d-%b-%Y') }}</td>
+          <td>{{ a.subject or 'Full Day' }}</td>
+          <td><span class="badge {{ 'bg-success' if a.status == 'Present' else 'bg-danger' }}">{{ a.status }}</span></td>
+          <td class="text-end">
+            <form method="POST" action="{{ url_for('delete_attendance', record_id=a.id) }}" class="confirm-delete">
+              <button class="btn btn-sm btn-outline-danger"><i class="bi bi-x"></i></button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" class="text-muted text-center py-3">No attendance records yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SCORE CARD -->
+  <div class="tab-pane fade" id="scorecard">
+    <form method="POST" action="{{ url_for('add_marks', student_id=student.id) }}" class="row g-2 mb-3">
+      <div class="col-md-3"><input type="text" name="subject" class="form-control" placeholder="Subject" required></div>
+      <div class="col-md-2">
+        <select name="exam_type" class="form-select" required>
+          <option>Unit Test</option><option>Mid Term</option><option>Final</option>
+        </select>
+      </div>
+      <div class="col-md-2"><input type="number" step="0.01" name="marks_obtained" class="form-control" placeholder="Marks Obtained" required></div>
+      <div class="col-md-2"><input type="number" step="0.01" name="max_marks" class="form-control" placeholder="Max Marks" value="100"></div>
+      <div class="col-md-2"><input type="date" name="date" class="form-control" value="{{ today }}"></div>
+      <div class="col-md-1"><button class="btn btn-primary w-100"><i class="bi bi-plus-lg"></i></button></div>
+    </form>
+    <table class="table table-sm">
+      <thead><tr><th>Date</th><th>Subject</th><th>Exam</th><th>Marks</th><th>%</th><th>Grade</th><th></th></tr></thead>
+      <tbody>
+        {% for m in student.marks|sort(attribute='date', reverse=true) %}
+        <tr>
+          <td>{{ m.date.strftime('%d-%b-%Y') }}</td>
+          <td>{{ m.subject }}</td>
+          <td>{{ m.exam_type }}</td>
+          <td>{{ m.marks_obtained }} / {{ m.max_marks }}</td>
+          <td>{{ m.percentage() }}%</td>
+          <td><span class="badge bg-info text-dark">{{ m.grade() }}</span></td>
+          <td class="text-end">
+            <form method="POST" action="{{ url_for('delete_marks', mark_id=m.id) }}" class="confirm-delete">
+              <button class="btn btn-sm btn-outline-danger"><i class="bi bi-x"></i></button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-muted text-center py-3">No marks recorded yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- FEES -->
+  <div class="tab-pane fade" id="fees">
+    <form method="POST" action="{{ url_for('add_fee', student_id=student.id) }}" class="row g-2 mb-3">
+      <div class="col-md-3">
+        <select name="fee_type" class="form-select" required>
+          <option>Tuition</option><option>Hostel</option><option>Exam</option><option>Other</option>
+        </select>
+      </div>
+      <div class="col-md-3"><input type="number" step="0.01" name="amount" class="form-control" placeholder="Amount (₹)" required></div>
+      <div class="col-md-3"><input type="date" name="due_date" class="form-control" required></div>
+      <div class="col-md-3"><button class="btn btn-primary w-100"><i class="bi bi-plus-lg"></i> Add Fee</button></div>
+    </form>
+    <table class="table table-sm">
+      <thead><tr><th>Type</th><th>Amount</th><th>Due Date</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for f in student.fees|sort(attribute='due_date') %}
+        <tr>
+          <td>{{ f.fee_type }}</td>
+          <td>₹{{ "%.2f"|format(f.amount) }}</td>
+          <td>{{ f.due_date.strftime('%d-%b-%Y') }}</td>
+          <td>
+            {% if f.paid %}<span class="badge bg-success">Paid</span>
+            {% elif f.due_date < today %}<span class="badge bg-danger">Overdue</span>
+            {% else %}<span class="badge bg-warning text-dark">Pending</span>{% endif %}
+          </td>
+          <td class="text-end">
+            <form method="POST" action="{{ url_for('toggle_fee_paid', fee_id=f.id) }}" class="d-inline">
+              <button class="btn btn-sm btn-outline-success">{{ 'Mark Unpaid' if f.paid else 'Mark Paid' }}</button>
+            </form>
+            <form method="POST" action="{{ url_for('delete_fee', fee_id=f.id) }}" class="confirm-delete d-inline">
+              <button class="btn btn-sm btn-outline-danger"><i class="bi bi-x"></i></button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="text-muted text-center py-3">No fee records yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- HOSTEL -->
+  <div class="tab-pane fade" id="hostel">
+    {% if student.is_hostel_resident %}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <p class="mb-1">Room: <b>{{ student.room_no or '-' }}</b> &nbsp; Block: <b>{{ student.hostel_block or '-' }}</b></p>
+        <p>Current Status:
+          <span class="badge {{ 'badge-in' if student.current_hostel_status() == 'IN' else 'badge-out' }} fs-6">
+            {{ student.current_hostel_status() }}
+          </span>
+        </p>
+      </div>
+      <form method="POST" action="{{ url_for('hostel_toggle', student_id=student.id) }}" class="d-flex gap-2">
+        <input type="text" name="remarks" class="form-control" placeholder="Remarks (optional)">
+        <button class="btn btn-primary text-nowrap">
+          Mark {{ 'OUT' if student.current_hostel_status() == 'IN' else 'IN' }}
+        </button>
+      </form>
+    </div>
+    <table class="table table-sm">
+      <thead><tr><th>Timestamp</th><th>Direction</th><th>Remarks</th></tr></thead>
+      <tbody>
+        {% for h in student.hostel_logs|sort(attribute='timestamp', reverse=true) %}
+        <tr>
+          <td>{{ h.timestamp.strftime('%d-%b-%Y %I:%M %p') }}</td>
+          <td><span class="badge {{ 'badge-in' if h.direction == 'IN' else 'badge-out' }}">{{ h.direction }}</span></td>
+          <td>{{ h.remarks or '-' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="3" class="text-muted text-center py-3">No hostel log entries yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="text-muted">This student is not a hostel resident (Day Scholar).</p>
+    {% endif %}
+  </div>
+
+  <!-- TASKS -->
+  <div class="tab-pane fade" id="tasks">
+    <form method="POST" action="{{ url_for('add_task', student_id=student.id) }}" class="row g-2 mb-3">
+      <div class="col-md-3"><input type="text" name="title" class="form-control" placeholder="Title" required></div>
+      <div class="col-md-2">
+        <select name="task_type" class="form-select" required>
+          <option>Test</option><option>Assignment</option><option>Project</option><option>Work</option>
+        </select>
+      </div>
+      <div class="col-md-3"><input type="text" name="description" class="form-control" placeholder="Description (optional)"></div>
+      <div class="col-md-2"><input type="date" name="due_date" class="form-control" required></div>
+      <div class="col-md-2"><button class="btn btn-primary w-100"><i class="bi bi-plus-lg"></i> Add</button></div>
+    </form>
+    <table class="table table-sm">
+      <thead><tr><th>Due Date</th><th>Type</th><th>Title</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for t in student.tasks|sort(attribute='due_date') %}
+        <tr>
+          <td>{{ t.due_date.strftime('%d-%b-%Y') }}</td>
+          <td><span class="badge bg-secondary">{{ t.task_type }}</span></td>
+          <td>{{ t.title }}{% if t.description %}<br><small class="text-muted">{{ t.description }}</small>{% endif %}</td>
+          <td>{% if t.completed %}<span class="badge bg-success">Done</span>{% else %}<span class="badge bg-warning text-dark">Pending</span>{% endif %}</td>
+          <td class="text-end">
+            <form method="POST" action="{{ url_for('toggle_task_done', task_id=t.id) }}" class="d-inline">
+              <button class="btn btn-sm btn-outline-success">{{ 'Undo' if t.completed else 'Complete' }}</button>
+            </form>
+            <form method="POST" action="{{ url_for('delete_task', task_id=t.id) }}" class="confirm-delete d-inline">
+              <button class="btn btn-sm btn-outline-danger"><i class="bi bi-x"></i></button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="text-muted text-center py-3">No tasks yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+{% endblock %}
